@@ -13,6 +13,13 @@ pub enum TokenKind {
 
     Assign,
     Plus,
+    Minus,
+    Asterisk,
+    Slash,
+
+    Bang,
+    Gt,
+    Lt,
 
     Comma,
     Semicolon,

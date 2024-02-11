@@ -41,6 +41,12 @@ impl Lexer {
             '}' => Lexer::new_token(TokenKind::Rbrace, "}".to_string()),
             ',' => Lexer::new_token(TokenKind::Comma, ",".to_string()),
             ';' => Lexer::new_token(TokenKind::Semicolon, ";".to_string()),
+            '-' => Lexer::new_token(TokenKind::Minus, "-".to_string()),
+            '/' => Lexer::new_token(TokenKind::Slash, "/".to_string()),
+            '*' => Lexer::new_token(TokenKind::Asterisk, "*".to_string()),
+            '!' => Lexer::new_token(TokenKind::Bang, "!".to_string()),
+            '<' => Lexer::new_token(TokenKind::Lt, "<".to_string()),
+            '>' => Lexer::new_token(TokenKind::Gt, ">".to_string()),
             '\0' => Lexer::new_token(TokenKind::Eof, "".to_string()),
             _ =>{
                 if Lexer::is_letter(self.ch){
@@ -360,6 +366,59 @@ mod tests{
                 got_token.literal
             )
         }
+    }
 
+    #[test]
+    fn test_extended_symbols(){
+        let input = "*/-!<>";
+        let expected : Vec<Token> = vec![
+            Token{
+                kind: TokenKind::Asterisk,
+                literal : "*".to_string()
+            },
+            Token{
+                kind: TokenKind::Slash,
+                literal : "/".to_string()
+            },
+            Token{
+                kind: TokenKind::Minus,
+                literal : "-".to_string()
+            },
+            Token{
+                kind: TokenKind::Bang,
+                literal : "!".to_string()
+            },
+            Token{
+                kind: TokenKind::Lt,
+                literal : "<".to_string()
+            },
+            Token{
+                kind: TokenKind::Gt,
+                literal : ">".to_string()
+            },
+        ];
+        let input_to_lexer = input.chars().collect();
+
+        let mut lexer = Lexer::new(input_to_lexer);
+
+        for (idx, expected_token) in expected.into_iter().enumerate(){
+            let got_token = lexer.next_token();
+            assert_eq!(
+                got_token.kind, 
+                expected_token.kind,
+                "test-extended-symbols-kind {}, token type wrong. Expected {:?} Got {:?}",
+                idx,
+                expected_token.kind,
+                got_token.kind
+            );
+            assert_eq!(
+                got_token.literal, 
+                expected_token.literal,
+                "test-extended-symbols-literal {}, token type wrong. Expected {:?} Got {:?}",
+                idx,
+                expected_token.literal,
+                got_token.literal
+            )
+        }
     }
 }
