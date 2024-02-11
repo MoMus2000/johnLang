@@ -26,7 +26,6 @@ impl Lexer {
         self.ch = self.input[self.read_position];
         self.current_position = self.read_position;
         self.read_position += 1;
-        println!("Current char {}", self.ch);
     }
 
     pub fn next_token(&mut self) -> Token{
@@ -98,7 +97,6 @@ impl Lexer {
 
         self.read_ch();
 
-        println!("The literal: {} kind: {:?}", token.literal, token.kind);
         token
     }
 
