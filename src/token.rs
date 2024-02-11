@@ -25,3 +25,12 @@ pub enum TokenKind {
     Fn,
     Let
 }
+
+pub fn match_literal_to_kind(literal: &str) -> TokenKind{
+    let res = match literal{
+        "fn" => TokenKind::Fn,
+        "let" => TokenKind::Let,
+        _ => TokenKind::Ident
+    };
+    res
+}
