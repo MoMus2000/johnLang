@@ -33,7 +33,14 @@ impl Lexer {
         self.skip_whitespace();
 
         let token = match self.ch {
-            '=' => Lexer::new_token(TokenKind::Assign, "=".to_string()),
+            '=' =>{
+                if self.peek_ahead() == '='{
+                    self.read_ch();
+                    Lexer::new_token(TokenKind::Eq, "==".to_string())
+                }else{
+                    Lexer::new_token(TokenKind::Assign, "=".to_string())
+                }
+            },
             '+' => Lexer::new_token(TokenKind::Plus, "+".to_string()),
             '(' => Lexer::new_token(TokenKind::Lparen, "(".to_string()),
             ')' => Lexer::new_token(TokenKind::Rparen, ")".to_string()),
@@ -44,9 +51,33 @@ impl Lexer {
             '-' => Lexer::new_token(TokenKind::Minus, "-".to_string()),
             '/' => Lexer::new_token(TokenKind::Slash, "/".to_string()),
             '*' => Lexer::new_token(TokenKind::Asterisk, "*".to_string()),
-            '!' => Lexer::new_token(TokenKind::Bang, "!".to_string()),
-            '<' => Lexer::new_token(TokenKind::Lt, "<".to_string()),
-            '>' => Lexer::new_token(TokenKind::Gt, ">".to_string()),
+            '!' => {
+                if self.peek_ahead() == '='{
+                    self.read_ch();
+                    Lexer::new_token(TokenKind::NotEq, "!=".to_string())
+                }
+                else{
+                    Lexer::new_token(TokenKind::Bang, "!".to_string())
+                }
+            },
+            '<' => {
+                if self.peek_ahead() == '='{
+                    self.read_ch();
+                    Lexer::new_token(TokenKind::LtEq, "<=".to_string())
+                }
+                else{
+                    Lexer::new_token(TokenKind::Lt, "<".to_string())
+                }
+            },
+            '>' => {
+                if self.peek_ahead() == '='{
+                    self.read_ch();
+                    Lexer::new_token(TokenKind::GtEq, ">=".to_string())
+                }
+                else{
+                    Lexer::new_token(TokenKind::Gt, ">".to_string())
+                }
+            },
             '\0' => Lexer::new_token(TokenKind::Eof, "".to_string()),
             _ =>{
                 if Lexer::is_letter(self.ch){
@@ -78,6 +109,14 @@ impl Lexer {
             self.read_ch();
         }
         num
+    }
+
+    fn peek_ahead(&self) -> char {
+        if self.read_position >= self.input.len(){
+            return '\0'
+        }else{
+            return self.input[self.read_position]
+        }
     }
 
     fn is_digit(ch: char) -> bool {
@@ -415,6 +454,147 @@ mod tests{
                 got_token.literal, 
                 expected_token.literal,
                 "test-extended-symbols-literal {}, token type wrong. Expected {:?} Got {:?}",
+                idx,
+                expected_token.literal,
+                got_token.literal
+            )
+        }
+    }
+
+    #[test]
+    fn test_double_char_symbols(){
+        let input = r#"
+        5 == 7;
+
+        7 != 8;
+
+        5 < 6;
+        6 <= 6;
+
+        7 > 9;
+        7 >= 7;
+        "#;
+        let expected : Vec<Token> = vec![
+            Token{
+                kind: TokenKind::Int,
+                literal : "5".to_string()
+            },
+            Token{
+                kind: TokenKind::Eq,
+                literal : "==".to_string()
+            },
+            Token{
+                kind: TokenKind::Int,
+                literal : "7".to_string()
+            },
+            Token{
+                kind: TokenKind::Semicolon,
+                literal : ";".to_string()
+            },
+
+            Token{
+                kind: TokenKind::Int,
+                literal : "7".to_string()
+            },
+            Token{
+                kind: TokenKind::NotEq,
+                literal : "!=".to_string()
+            },
+            Token{
+                kind: TokenKind::Int,
+                literal : "8".to_string()
+            },
+            Token{
+                kind: TokenKind::Semicolon,
+                literal : ";".to_string()
+            },
+
+            Token{
+                kind: TokenKind::Int,
+                literal : "5".to_string()
+            },
+            Token{
+                kind: TokenKind::Lt,
+                literal : "<".to_string()
+            },
+            Token{
+                kind: TokenKind::Int,
+                literal : "6".to_string()
+            },
+            Token{
+                kind: TokenKind::Semicolon,
+                literal : ";".to_string()
+            },
+
+            Token{
+                kind: TokenKind::Int,
+                literal : "6".to_string()
+            },
+            Token{
+                kind: TokenKind::LtEq,
+                literal : "<=".to_string()
+            },
+            Token{
+                kind: TokenKind::Int,
+                literal : "6".to_string()
+            },
+            Token{
+                kind: TokenKind::Semicolon,
+                literal : ";".to_string()
+            },
+
+            Token{
+                kind: TokenKind::Int,
+                literal : "7".to_string()
+            },
+            Token{
+                kind: TokenKind::Gt,
+                literal : ">".to_string()
+            },
+            Token{
+                kind: TokenKind::Int,
+                literal : "9".to_string()
+            },
+            Token{
+                kind: TokenKind::Semicolon,
+                literal : ";".to_string()
+            },
+
+            Token{
+                kind: TokenKind::Int,
+                literal : "7".to_string()
+            },
+            Token{
+                kind: TokenKind::GtEq,
+                literal : ">=".to_string()
+            },
+            Token{
+                kind: TokenKind::Int,
+                literal : "7".to_string()
+            },
+            Token{
+                kind: TokenKind::Semicolon,
+                literal : ";".to_string()
+            },
+        ];
+        let input_to_lexer = input.chars().collect();
+
+        let mut lexer = Lexer::new(input_to_lexer);
+
+        for (idx, expected_token) in expected.into_iter().enumerate(){
+            let got_token = lexer.next_token();
+            assert_eq!(
+                got_token.kind, 
+                expected_token.kind,
+                "test-extended-double-symbols-kind {}, token type wrong. Expected {:?} Got {:?}",
+                idx,
+                expected_token.kind,
+                got_token.kind
+            );
+            assert_eq!(
+                got_token.literal, 
+                expected_token.literal,
+                "test-extended-double-symbols-literal {}, token type wrong. Expected {:?} Got {:?}",
                 idx,
                 expected_token.literal,
                 got_token.literal

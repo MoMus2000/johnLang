@@ -17,9 +17,14 @@ pub enum TokenKind {
     Asterisk,
     Slash,
 
+    Eq,
+    NotEq,
+
     Bang,
     Gt,
     Lt,
+    GtEq,
+    LtEq,
 
     Comma,
     Semicolon,
